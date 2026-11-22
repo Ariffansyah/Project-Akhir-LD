@@ -1,0 +1,38 @@
+Dataset: 4000 baris, distribusi kelas: {'TIDAK_SIRAM': np.int64(2012), 'SIRAM': np.int64(1275), 'TUNDA': np.int64(713)}
+Data latih: 3200, data uji: 800
+
+Pemilihan kedalaman pohon (5-fold cross-validation pada data latih):
+  max_depth= 2  akurasi=0.8412 ± 0.0156
+  max_depth= 3  akurasi=0.8956 ± 0.0093
+  max_depth= 4  akurasi=0.9341 ± 0.0075
+  max_depth= 5  akurasi=0.9331 ± 0.0086
+  max_depth= 6  akurasi=0.9350 ± 0.0068
+  max_depth= 7  akurasi=0.9363 ± 0.0051
+  max_depth= 8  akurasi=0.9366 ± 0.0057
+  max_depth= 9  akurasi=0.9372 ± 0.0052
+  max_depth=10  akurasi=0.9353 ± 0.0047
+
+Kedalaman terpilih: 4 (16 daun)
+Akurasi Decision Tree (data uji): 0.9200
+Akurasi pembanding ambang tetap tanah<40%: 0.7800
+
+              precision    recall  f1-score   support
+
+ TIDAK_SIRAM     0.9520    0.9378    0.9449       402
+       SIRAM     0.8821    0.9686    0.9234       255
+       TUNDA     0.9032    0.7832    0.8390       143
+
+    accuracy                         0.9200       800
+   macro avg     0.9125    0.8966    0.9024       800
+weighted avg     0.9210    0.9200    0.9191       800
+
+Matriks konfusi (baris = sebenarnya, kolom = prediksi):
+[[377  17   8]
+ [  4 247   4]
+ [ 15  16 112]]
+
+Kepentingan fitur: soil=0.774, temp=0.000, hum=0.004, lux=0.075, vpd=0.146
+
+Penyiraman saat terik-kering/malam pada data uji:
+  ambang tetap : 193 kali
+  Decision Tree: 123 kali

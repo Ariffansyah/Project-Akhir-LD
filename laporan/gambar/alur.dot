@@ -1,0 +1,24 @@
+digraph F {
+  bgcolor=white; fontname="Helvetica"; ranksep=0.3;
+  node [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled", fillcolor="#eef5ec", color="#2e7d32"];
+  edge [fontname="Helvetica", fontsize=9, color="#455a64"];
+  mulai [label="Mulai", shape=oval];
+  setup [label="Inisialisasi pin, DHT22, LCD,\nWiFi (Wokwi-GUEST), MQTT"];
+  mqtt [label="MQTT tersambung? Jika tidak,\ncoba sambung (maks. tiap 5 detik)"];
+  tunggu [label="Sudah 2 detik?", shape=diamond, fillcolor="#fffde7", color="#b26a00"];
+  dht [label="Baca suhu & kelembapan udara"];
+  ok [label="Bacaan DHT22 valid?", shape=diamond, fillcolor="#fffde7", color="#b26a00"];
+  aman [label="Pompa OFF, LCD \"DHT22 error\"\n(fail-safe)", fillcolor="#ffebee", color="#c62828"];
+  baca [label="Baca tanah (%) dan cahaya (lux),\nhitung VPD"];
+  ai [label="prediksi() Decision Tree\n→ TIDAK_SIRAM / SIRAM / TUNDA", fillcolor="#fff3e0", color="#b26a00"];
+  out [label="Atur relay pompa, LED, LCD"];
+  kirim [label="Cetak JSON ke serial,\npublish ke topik MQTT"];
+  mulai -> setup -> mqtt -> tunggu;
+  tunggu -> mqtt [label="belum"];
+  tunggu -> dht [label="ya"];
+  dht -> ok;
+  ok -> aman [label="tidak"];
+  aman -> mqtt;
+  ok -> baca [label="ya"];
+  baca -> ai -> out -> kirim -> mqtt;
+}

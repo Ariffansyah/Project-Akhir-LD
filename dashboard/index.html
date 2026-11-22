@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Irigasi Cerdas</title>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js" integrity="sha384-u4uqeACkFcoKl57rBQJHVGDd1pqhW4w8X3WjTu1ZksPdxoLqdt34jpoNkJisE25W" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" integrity="sha384-NrKB+u6Ts6AtkIhwPixiKTzgSKNblyhlk0Sohlgar9UHUBzai/sgnNNWWd291xqt" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #f4f6f2; --card: #fff; --ink: #1d2a1f; --muted: #5b6b5e; --line: #dfe5dc;
+    --hijau: #2e7d32; --kuning: #b26a00; --merah: #c62828;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; padding: 20px 24px 8px; }
+  h1 { margin: 0; font-size: 22px; }
+  .status { font-size: 13px; color: var(--muted); }
+  .status b { color: var(--merah); }
+  .status b.on { color: var(--hijau); }
+  main { display: grid; gap: 16px; padding: 16px 24px 32px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card h2 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .nilai { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .nilai small { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .lebar { grid-column: 1 / -1; }
+  #keputusan { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: center; border-left: 6px solid var(--line); }
+  #keputusan .nilai { font-size: 34px; }
+  #keputusan p { margin: 0; max-width: 60ch; color: var(--muted); }
+  .TIDAK_SIRAM { border-left-color: var(--hijau) !important; } .TIDAK_SIRAM .nilai { color: var(--hijau); }
+  .SIRAM { border-left-color: var(--merah) !important; } .SIRAM .nilai { color: var(--merah); }
+  .TUNDA { border-left-color: var(--kuning) !important; } .TUNDA .nilai { color: var(--kuning); }
+  .grafik { height: 280px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  #saran { margin: 0; font-size: 16px; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  form { display: flex; gap: 8px; margin-top: 12px; }
+  input { flex: 1; min-width: 0; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+  button { font: inherit; padding: 8px 16px; border: 0; border-radius: 8px; background: var(--hijau); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  input:focus-visible, button:focus-visible { outline: 2px solid #1565c0; outline-offset: 2px; }
+  #obrolan { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+  #obrolan li { padding: 8px 12px; border-radius: 8px; background: var(--bg); }
+  #obrolan li.saya { font-weight: 600; }
+  @media (max-width: 480px) { header, main { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dashboard Irigasi Cerdas AIoT</h1>
+  <div class="status">MQTT: <b id="mqtt">menyambung…</b> · data terakhir: <span id="waktu">belum ada</span></div>
+</header>
+<main>
+  <section class="card lebar" id="keputusan" aria-live="polite">
+    <div>
+      <h2>Rekomendasi AI (Decision Tree di ESP32)</h2>
+      <div class="nilai" id="kelas">–</div>
+    </div>
+    <div>
+      <h2>Pompa</h2>
+      <div class="nilai" id="pompa">–</div>
+    </div>
+    <p id="alasan">Menunggu data dari perangkat…</p>
+  </section>
+  <section class="card lebar">
+    <h2>Asisten AI (LLM): penjelasan dan saran untuk petani</h2>
+    <p id="saran" aria-live="polite">Belum ada saran. Jalankan <code>ai/asisten_llm.py</code> untuk mengaktifkan asisten.</p>
+    <div class="meta" id="saran_meta"></div>
+    <form id="form_tanya">
+      <label for="tanya" class="meta" style="position:absolute;left:-9999px">Pertanyaan untuk asisten</label>
+      <input id="tanya" maxlength="300" placeholder="Tanya asisten, mis. kapan waktu terbaik menyiram?" autocomplete="off">
+      <button id="kirim">Tanya</button>
+    </form>
+    <ul id="obrolan" aria-live="polite"></ul>
+  </section>
+  <section class="card"><h2>Kelembapan tanah</h2><div class="nilai"><span id="tanah">–</span> <small>%</small></div></section>
+  <section class="card"><h2>Suhu udara</h2><div class="nilai"><span id="suhu">–</span> <small>°C</small></div></section>
+  <section class="card"><h2>Kelembapan udara</h2><div class="nilai"><span id="kelembapan">–</span> <small>%</small></div></section>
+  <section class="card"><h2>Intensitas cahaya</h2><div class="nilai"><span id="lux">–</span> <small>lux</small></div></section>
+  <section class="card"><h2>VPD (penguapan)</h2><div class="nilai"><span id="vpd">–</span> <small>kPa</small></div></section>
+  <section class="card"><h2>Jumlah keputusan</h2><div class="nilai" style="font-size:16px" id="hitung">–</div></section>
+  <section class="card lebar"><h2>Riwayat sensor</h2><div class="grafik"><canvas id="grafik"></canvas></div></section>
+  <section class="card lebar">
+    <h2>Log keputusan terbaru</h2>
+    <table>
+      <thead><tr><th>Waktu</th><th>Tanah</th><th>Suhu</th><th>RH</th><th>Lux</th><th>VPD</th><th>Keputusan</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+  </section>
+</main>
+<script>
+// Harus sama dengan TOPIK di simulasi/firmware/firmware.ino dan DASAR di ai/asisten_llm.py.
+const DASAR = 'litdih-aiot/irigasi-cerdas';
+const BROKER = 'wss://broker.hivemq.com:8884/mqtt';
+const MAKS_TITIK = 60;
+const ALASAN = {
+  TIDAK_SIRAM: 'Tanah masih cukup lembap untuk kondisi udara saat ini. Pompa mati, air dihemat.',
+  SIRAM: 'Tanah kering dan kondisi mendukung penyerapan air. Pompa dinyalakan.',
+  TUNDA: 'Tanah mulai kering, tetapi udara sedang terik-kering sehingga air cepat menguap. Penyiraman ditunda ke sore hari.',
+  TUNDA_MALAM: 'Tanah mulai kering, tetapi sekarang malam hari: daun yang basah semalaman mudah berjamur. Penyiraman ditunda ke pagi.',
+};
+const $ = (id) => document.getElementById(id);
+const hitung = { TIDAK_SIRAM: 0, SIRAM: 0, TUNDA: 0 };
+
+const grafik = new Chart($('grafik'), {
+  type: 'line',
+  data: { labels: [], datasets: [
+    { label: 'Kelembapan tanah (%)', data: [], borderColor: '#2e7d32', yAxisID: 'y' },
+    { label: 'Kelembapan udara (%)', data: [], borderColor: '#1565c0', yAxisID: 'y' },
+    { label: 'Suhu (°C)', data: [], borderColor: '#c62828', yAxisID: 'y1' },
+  ] },
+  options: {
+    animation: false, maintainAspectRatio: false, elements: { point: { radius: 0 } },
+    scales: { y: { min: 0, max: 100, title: { display: true, text: '%' } },
+              y1: { position: 'right', min: 15, max: 45, grid: { drawOnChartArea: false }, title: { display: true, text: '°C' } } },
+  },
+});
+
+function tampil(d) {
+  const jam = new Date().toLocaleTimeString('id-ID');
+  for (const k of ['tanah', 'suhu', 'kelembapan', 'vpd']) $(k).textContent = Number(d[k]).toFixed(k === 'vpd' ? 2 : 1);
+  $('lux').textContent = Math.round(d.lux);
+  $('waktu').textContent = jam;
+  $('kelas').textContent = d.keputusan.replace('_', ' ');
+  $('pompa').textContent = d.pompa ? 'MENYALA' : 'MATI';
+  $('alasan').textContent = ALASAN[d.keputusan === 'TUNDA' && d.lux < 20 ? 'TUNDA_MALAM' : d.keputusan] ?? '';
+  $('keputusan').className = 'card lebar ' + d.keputusan;
+  hitung[d.keputusan]++;
+  $('hitung').textContent = `Siram ${hitung.SIRAM} · Tunda ${hitung.TUNDA} · Tidak ${hitung.TIDAK_SIRAM}`;
+
+  grafik.data.labels.push(jam);
+  [d.tanah, d.kelembapan, d.suhu].forEach((v, i) => grafik.data.datasets[i].data.push(v));
+  if (grafik.data.labels.length > MAKS_TITIK) {
+    grafik.data.labels.shift();
+    grafik.data.datasets.forEach((s) => s.data.shift());
+  }
+  grafik.update();
+
+  const tr = document.createElement('tr');
+  for (const v of [jam, d.tanah + '%', d.suhu + '°C', d.kelembapan + '%', Math.round(d.lux), d.vpd, d.keputusan]) {
+    tr.insertCell().textContent = v;
+  }
+  $('log').prepend(tr);
+  while ($('log').rows.length > 10) $('log').deleteRow(-1);
+}
+
+const klien = mqtt.connect(BROKER, { clientId: 'dashboard-' + Math.random().toString(16).slice(2, 10) });
+klien.on('connect', () => {
+  $('mqtt').textContent = 'tersambung';
+  $('mqtt').className = 'on';
+  klien.subscribe([`${DASAR}/data`, `${DASAR}/saran`, `${DASAR}/jawaban`]);
+});
+klien.on('reconnect', () => { $('mqtt').textContent = 'menyambung ulang…'; $('mqtt').className = ''; });
+klien.on('offline', () => { $('mqtt').textContent = 'terputus'; $('mqtt').className = ''; });
+klien.on('message', (topik, pesan) => {
+  let d;
+  try { d = JSON.parse(pesan.toString()); } catch { return; /* bukan JSON dari sistem ini */ }
+  if (topik.endsWith('/data') && d.keputusan in hitung) tampil(d);
+  else if (topik.endsWith('/saran') && typeof d.teks === 'string') {
+    $('saran').textContent = d.teks;
+    $('saran_meta').textContent = `${d.model} · ${d.detik} detik · untuk keputusan ${d.keputusan}`;
+  } else if (topik.endsWith('/jawaban') && menunggu.has(d.id)) {
+    menunggu.delete(d.id);
+    obrolan(d.teks, false, `${d.model} · ${d.detik} detik`);
+    $('kirim').disabled = false;
+  }
+});
+
+// Hanya jawaban untuk pertanyaan dari halaman ini yang ditampilkan.
+const menunggu = new Set();
+function obrolan(teks, saya, meta) {
+  const li = document.createElement('li');
+  li.className = saya ? 'saya' : '';
+  li.textContent = teks;
+  if (meta) { const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta; li.append(m); }
+  $('obrolan').prepend(li);
+  while ($('obrolan').children.length > 10) $('obrolan').lastChild.remove();
+}
+$('form_tanya').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const teks = $('tanya').value.trim();
+  if (!teks || !klien.connected) return;
+  const id = Math.random().toString(16).slice(2, 10);
+  menunggu.add(id);
+  klien.publish(`${DASAR}/tanya`, JSON.stringify({ id, teks }));
+  obrolan(teks, true);
+  $('tanya').value = '';
+  $('kirim').disabled = true;
+  setTimeout(() => {
+    if (!menunggu.delete(id)) return;
+    obrolan('Asisten tidak menjawab. Pastikan ai/asisten_llm.py berjalan.', false);
+    $('kirim').disabled = false;
+  }, 60000);
+});
+</script>
+</body>
+</html>

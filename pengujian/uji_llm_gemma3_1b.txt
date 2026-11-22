@@ -1,0 +1,49 @@
+Model: gemma3:1b
+
+[1] tanah 80%, 30 °C, RH 65%, 800 lux -> TIDAK_SIRAM (4.0 s)
+Pompa sudah mati karena tanah masih cukup lembap (80%), meskipun suhu dan kelembapan udara sedang. Saran praktis: Periksa kembali level air di dalam wadah irigasi, jika airnya kurang, siram lagi.
+
+[2] tanah 15%, 35 °C, RH 40%, 1500 lux -> SIRAM (3.7 s)
+Oke, pompa sekarang dinyalakan karena tanah benar-benar sangat kering. Saran praktisnya, periksa kembali kelembapan tanah setiap jam untuk memastikan air yang disiram masih cukup.
+
+[3] tanah 35%, 28 °C, RH 75%, 800 lux -> SIRAM (4.2 s)
+Oke, petani, pompa sekarang dinyalakan karena tanah mulai kering dan udara masih sejuk. Jadi, siram sekarang akan membantu tanaman mendapatkan air yang dibutuhkan. Saran praktis: Pastikan untuk menyiram area yang paling membutuhkan air, seperti akar tanaman.
+
+[4] tanah 35%, 35 °C, RH 45%, 1500 lux -> TUNDA (4.4 s)
+Saya sudah memutuskan pompa mati karena kondisi udara saat ini terlalu panas dan kering. Air siram akan cepat menguap, jadi sebaiknya jangan menyiram sekarang. Saran praktis: Letakkan wadah air di dekat tanaman untuk menampung sedikit tetes air yang terbuang.
+
+[5] tanah 35%, 26 °C, RH 85%, 5 lux -> TUNDA (4.0 s)
+Saya sudah memutuskan untuk menunda penyiraman karena malam hari dan daun yang basah bisa menyebabkan masalah jamur. Saran praktis: pastikan tanaman di area yang disiram selalu bersih dari kotoran dan debu.
+
+[6] tanah 50%, 34 °C, RH 45%, 1500 lux -> TUNDA (4.3 s)
+Saya sudah memutuskan pompa mati karena kondisi udara saat ini cukup panas dan kering. Air akan cepat menguap, jadi sebaiknya jangan menyiram sekarang. Saran praktis:  Perhatikan area tanaman yang paling membutuhkan air, misalnya bagian bawah tanaman, untuk memastikan air mencapai akar.
+
+[7] tanah 50%, 27 °C, RH 80%, 800 lux -> TIDAK_SIRAM (3.9 s)
+Pompa tetap mati karena tanah masih cukup lembap (50%), walaupun udara sedang panas. Saran: Periksa kembali kelembapan tanah secara berkala, dan jika sudah mencapai 60%, pertimbangkan untuk menyiram.
+
+[8] tanah 70%, 36 °C, RH 35%, 2000 lux -> TIDAK_SIRAM (3.8 s)
+Pompa tetap mati karena tanah masih cukup lembap (70%), walaupun udara sedang panas. Saran: Perhatikan lagi kelembapan tanah di pagi hari, mungkin air akan lebih cepat terserap.
+
+[Tanya, SIRAM] Apakah saya harus menyalakan pompa sekarang? (3.6 s) -> konsisten
+Ya, silakan siram sekarang. Karena tanah mulai kering dan udara sedang panas, air akan terserap dengan lebih baik saat disiram.
+
+[Tanya, SIRAM] Boleh saya siram tanaman sekarang? (1.1 s) -> konsisten
+Ya, silakan siram sekarang. Karena tanah mulai kering dan udara sedang panas, air akan terserap dengan baik.
+
+[Tanya, TUNDA] Apakah saya harus menyalakan pompa sekarang? (3.5 s) -> konsisten
+Tidak, sebaiknya jangan dulu. Pompa sudah mati karena udara sedang panas dan kering, jadi air cepat menguap.
+
+[Tanya, TUNDA] Boleh saya siram tanaman sekarang? (1.3 s) -> konsisten
+Tidak, jangan siram sekarang karena udara sedang panas dan kering, air cepat menguap. Pompa sudah mati, jadi sebaiknya istirahat dulu.
+
+[Tanya, TIDAK_SIRAM] Apakah saya harus menyalakan pompa sekarang? (3.3 s) -> konsisten
+Tidak, jangan disalakan sekarang. Keputusan sudah dibuat, pompa mati.
+
+[Tanya, TIDAK_SIRAM] Boleh saya siram tanaman sekarang? (1.4 s) -> konsisten
+Tidak, jangan siram sekarang karena tanah masih cukup lembap (70%), meskipun suhu sedikit naik. Pompa sudah mati, jadi sebaiknya tunggu sampai udara lebih sejuk.
+
+[Tanya, TUNDA] Kapan waktu terbaik untuk menyiram hari ini? (3.7 s)
+Hari ini, sebaiknya siram pagi hari, sekitar pukul 08.00 - 09.00 WIB. Saat matahari belum terlalu terik.
+
+Konsistensi jawaban soal pompa: 6/6
+Waktu respons rata-rata: 3.3 s, maksimum 4.4 s

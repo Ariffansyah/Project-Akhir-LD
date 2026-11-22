@@ -1,0 +1,26 @@
+digraph G {
+  rankdir=LR; bgcolor=white; fontname="Helvetica"; nodesep=0.35; ranksep=0.5;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, fillcolor="#eef5ec", color="#2e7d32"];
+  edge [fontname="Helvetica", fontsize=9, color="#455a64"];
+  subgraph cluster_s { label="Sensor"; style="rounded,dashed"; color="#90a4ae"; fontsize=11;
+    tanah [label="Sensor kelembapan tanah\n(potensiometer, GPIO35)"];
+    dht [label="DHT22\nsuhu & kelembapan udara (GPIO32)"];
+    ldr [label="Modul LDR\nintensitas cahaya (GPIO34)"]; }
+  subgraph cluster_e { label="ESP32 DevKitC V4"; style="rounded"; color="#2e7d32"; fontsize=11;
+    baca [label="Baca & konversi\n(%, °C, lux)"];
+    vpd [label="Hitung VPD\n(rumus Tetens)"];
+    ai [label="AI: Decision Tree\n(model.h)", fillcolor="#fff3e0", color="#b26a00"]; }
+  subgraph cluster_o { label="Output / Aksi"; style="rounded,dashed"; color="#90a4ae"; fontsize=11;
+    relay [label="Relay pompa air\n(GPIO23)"];
+    led [label="LED hijau/kuning/merah\n(GPIO19/18/5)"];
+    lcd [label="LCD 16x2 I2C\n(SDA 21, SCL 22)"]; }
+  broker [label="MQTT broker\nbroker.hivemq.com", fillcolor="#e3f2fd", color="#1565c0"];
+  dash [label="Dashboard web\n(grafik, log, saran, tanya-jawab)", fillcolor="#e3f2fd", color="#1565c0"];
+  llm [label="Asisten LLM (asisten_llm.py)\nGemma 3 1B lokal (Ollama)\natau Groq (cloud)", fillcolor="#f3e5f5", color="#7b1fa2"];
+  tanah -> baca; dht -> baca; ldr -> baca;
+  baca -> vpd -> ai;
+  ai -> relay; ai -> led; ai -> lcd;
+  ai -> broker [label="WiFi, JSON\ntiap 2 detik"];
+  broker -> dash [label="data, saran, jawaban /\ntanya (WebSocket)", dir=both];
+  broker -> llm [label="data, tanya /\nsaran, jawaban", dir=both];
+}

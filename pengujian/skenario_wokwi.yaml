@@ -1,0 +1,190 @@
+name: Uji skenario irigasi cerdas
+version: 1
+author: Kelompok Literasi Digital
+
+steps:
+  - wait-serial: 'MQTT tersambung'
+  # Tanah basah, siang normal
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.8
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 30
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 65
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 800
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"TIDAK_SIRAM"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 0
+  # Tanah kritis saat terik
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.15
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 35
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 40
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 1500
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"SIRAM"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 1
+  # Tanah kering, pagi sejuk
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.35
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 28
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 75
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 800
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"SIRAM"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 1
+  # Tanah kering, siang terik-kering
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.35
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 35
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 45
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 1500
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"TUNDA"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 0
+  # Tanah kering, malam hari
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.35
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 26
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 85
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 5
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"TUNDA"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 0
+  # Tanah sedang, terik-kering
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.5
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 34
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 45
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 1500
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"TUNDA"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 0
+  # Tanah sedang, udara lembap
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.5
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 27
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 80
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 800
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"TIDAK_SIRAM"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 0
+  # Tanah basah, sangat panas
+  - set-control:
+      part-id: tanah1
+      control: position
+      value: 0.7
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 36
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 35
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 2000
+  - delay: 2500ms
+  - wait-serial: '"keputusan":"TIDAK_SIRAM"'
+  - expect-pin:
+      part-id: pompa
+      pin: IN
+      value: 0
